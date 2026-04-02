@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+<div class="container">
+
+<h2>🛠 Admin Panel</h2>
+
+<select id="adminOrgSelect">
+<option value="">--Select Organization--</option>
+<option>SSL</option>
+<option>ASSETS</option>
+<option>PRISM</option>
+<option>SCHOLAE</option>
+<option>CYSTEM</option>
+<option>SKILS</option>
+</select>
+
+<input type="password" id="adminPass" placeholder="Enter password">
+
+<button onclick="showAdmin()">View Feedback</button>
+
+<div class="stats" id="stats"></div>
+
+<div id="adminMessages"></div>
+
+</div>
+
+<script>
+const STORAGE_KEY = "shsFeedback";
+
+const ORG_PASSWORDS = {
+  "SSL": "ssl123",
+  "ASSETS": "assets456",
+  "PRISM": "prism789",
+  "SCHOLAE": "scholae101",
+  "CYSTEM": "cystem202",
+  "SKILS": "skils303"
+};
+
+let currentData = [];
+
+function showAdmin(){
+    const org = document.getElementById("adminOrgSelect").value;
+    const pass = document.getElementById("adminPass").value;
+
+    if(!org) return alert("Select organization!");
+    if(pass !== ORG_PASSWORDS[org]) return alert("Wrong password!");
+
+    const feedback = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    currentData = feedback.filter(f => f.org.includes(org));
+
+    displayMessages(currentData);
+}
+
+function displayMessages(data){
+    const box = document.getElementById("adminMessages");
+    const stats = document.getElementById("stats");
+
+    box.innerHTML = "";
+    stats.innerText = "Total Feedback: " + data.length;
+
+    if(data.length === 0){
+        box.innerHTML = "<div class='empty'>📭 No feedback yet</div>";
+        return;
+    }
+
+    data.forEach((fb, index) => {
+        const div = document.createElement("div");
+        div.className = "message";
+
+        div.innerHTML = `
+            <b>Message:</b> ${fb.text}
+            <small>📅 ${fb.date || "No date"}</small>
+            <small>📩 ${fb.contact || "Anonymous"}</small>
+        `;
+
+        const del = document.createElement("button");
+        del.innerText = "Delete";
+        del.onclick = () => deleteFeedback(index);
+
+        div.appendChild(del);
+        box.appendChild(div);
+    });
+
+    // AUTO-SCROLL SA PINAKABABA PARA MAKITA ANG PINAKABAGONG MESSAGE
+    box.scrollTo({
+        top: box.scrollHeight,
+        behavior: 'smooth'
+    });
+}
+
+function deleteFeedback(index){
+    if(!confirm("Delete this feedback?")) return;
+
+    let feedback = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    const item = currentData[index];
+    const realIndex = feedback.findIndex(f => f === item);
+
+    if(realIndex > -1){
+        feedback.splice(realIndex, 1);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(feedback));
+        showAdmin();
+    }
+}
+</script>
+
+</body>
+</html>
