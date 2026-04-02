@@ -5,6 +5,7 @@
 <title>SHS Feedback Wall</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="students.css">
+
 </head>
 
 <body>
@@ -57,24 +58,20 @@ function sendFeedback(){
     feedback.push(newEntry);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(feedback));
 
-    // Show success
     document.getElementById("successMsg").style.display = "block";
 
-    // Show feedback preview
     const previewBox = document.getElementById("previewBox");
     const div = document.createElement("div");
     div.className = "message";
     div.innerHTML = `<b>To:</b> ${org}<br><b>Message:</b> ${text}<br><small>📅 ${newEntry.date}</small>`;
+    
     previewBox.appendChild(div);
     previewBox.style.display = "block";
 
-    // Auto-scroll sa pinakabagong message
     previewBox.scrollTop = previewBox.scrollHeight;
 
-    // Clear textarea
     document.getElementById("msgText").value = "";
 
-    // Hide success message after 3 sec
     setTimeout(()=>{
         document.getElementById("successMsg").style.display = "none";
     }, 3000);
