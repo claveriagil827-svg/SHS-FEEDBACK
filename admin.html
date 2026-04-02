@@ -5,6 +5,7 @@
 <title>Admin Panel</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="admin.css">
+
 </head>
 
 <body>
@@ -89,7 +90,6 @@ function displayMessages(data){
         box.appendChild(div);
     });
 
-    // AUTO-SCROLL SA PINAKABABA PARA MAKITA ANG PINAKABAGONG MESSAGE
     box.scrollTo({
         top: box.scrollHeight,
         behavior: 'smooth'
@@ -101,7 +101,13 @@ function deleteFeedback(index){
 
     let feedback = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     const item = currentData[index];
-    const realIndex = feedback.findIndex(f => f === item);
+
+    const realIndex = feedback.findIndex(f => 
+        f.org === item.org &&
+        f.text === item.text &&
+        f.date === item.date &&
+        (f.contact || "Anonymous") === (item.contact || "Anonymous")
+    );
 
     if(realIndex > -1){
         feedback.splice(realIndex, 1);
