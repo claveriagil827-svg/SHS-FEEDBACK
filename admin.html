@@ -4,20 +4,23 @@
 <meta charset="UTF-8" />
 <title>Admin Panel | Feedback Manager</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="admin.css" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<link rel="stylesheet" href="admin.css" />  
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
-
+</style>
 </head>
 <body>
 
 <div class="top-logos">
-  <img src="SSL.jpg" class="logo" data-org="SSL" />
-  <img src="ASSETS.jpg" class="logo" data-org="ASSETS" />
-  <img src="PRISM.jpg" class="logo" data-org="PRISM" />
-  <img src="SCHOLAE.jpg" class="logo" data-org="SCHOLAE" />
-  <img src="CYSTEM.jpg" class="logo" data-org="CYSTEM" />
-  <img src="SKILLS.jpg" class="logo" data-org="SKILS" />
+  <img src="SSL.jpg" class="logo" data-org="SSL" alt="SSL" onerror="this.src='https://placehold.co/95x95?text=SSL'">
+  <img src="ASSETS.jpg" class="logo" data-org="ASSETS" alt="ASSETS" onerror="this.src='https://placehold.co/95x95?text=ASSETS'">
+  <img src="PRISM.jpg" class="logo" data-org="PRISM" alt="PRISM" onerror="this.src='https://placehold.co/95x95?text=PRISM'">
+  <img src="SCHOLAE.jpg" class="logo" data-org="SCHOLAE" alt="SCHOLAE" onerror="this.src='https://placehold.co/95x95?text=SCHOLAE'">
+  <img src="CYSTEM.jpg" class="logo" data-org="CYSTEM" alt="CYSTEM" onerror="this.src='https://placehold.co/95x95?text=CYSTEM'">
+  <img src="SKILLS.jpg" class="logo" data-org="SKILS" alt="SKILS" onerror="this.src='https://placehold.co/95x95?text=SKILS'">
 </div>
 
 <div class="container">
@@ -28,9 +31,9 @@
 <option value="SSL">SSL</option>
 <option value="ASSETS">ASSETS</option>
 <option value="PRISM">PRISM</option>
-<option value="SCHOLAE"> SCHOLAE</option>
-<option value="CYSTEM"> CYSTEM</option>
-<option value="SKILS"> SKILS</option>
+<option value="SCHOLAE">SCHOLAE</option>
+<option value="CYSTEM">CYSTEM</option>
+<option value="SKILS">SKILS</option>
 </select>
 
 <div class="password-wrapper">
@@ -57,41 +60,98 @@
 </div>
 
 <script>
-const STORAGE_KEY = "shsFeedback";
-const ORG_PASSWORDS = { "SSL":"ssl123","ASSETS":"assets456","PRISM":"prism789","SCHOLAE":"scholae101","CYSTEM":"cystem202","SKILS":"skils303"};
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCzy6G8bN908rcof72zMmiNxYfWb3l3KDo",
+  authDomain: "shs-feedback-29a25.firebaseapp.com",
+  databaseURL: "https://shs-feedback-29a25-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "shs-feedback-29a25",
+  storageBucket: "shs-feedback-29a25.appspot.com",
+  messagingSenderId: "549915426544",
+  appId: "1:549915426544:web:9d19f938d7f84ac5104c35"
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+  
+const ORG_PASSWORDS = { 
+  "SSL": "ssl123",
+  "ASSETS": "assets456", 
+  "PRISM": "prism789",
+  "SCHOLAE": "scholae101",
+  "CYSTEM": "cystem202",
+  "SKILS": "skils303"
+};
+
 const logoElements = document.querySelectorAll('.top-logos .logo');
 let currentData = [];
+let currentAuthorizedOrg = ""; 
 
-function highlightLogo(selectedOrg){ 
-  logoElements.forEach(img=>{ 
+function highlightLogo(selectedOrg) { 
+  logoElements.forEach(img => { 
     img.classList.toggle('active', img.dataset.org === selectedOrg); 
   }); 
 }
 
-function showAdmin(){
+function showAdmin() {
   const org = document.getElementById("adminOrgSelect").value;
   const pass = document.getElementById("adminPass").value;
-  if(!org) return alert("Select organization!");
-  if(pass !== ORG_PASSWORDS[org]) return alert("Wrong password!");
-  const feedback = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  currentData = feedback.filter(f => f.org === org);
-  displayMessages(currentData);
-  highlightLogo(org);
+  
+  if (!org) {
+    alert("Select organization!");
+    return;
+  }
+  
+  if (pass !== ORG_PASSWORDS[org]) {
+    alert("Wrong password!");
+    return;
+  }
+
+  const box = document.getElementById("adminMessages");
+  box.innerHTML = "<div class='empty'>⏳ Loading feedback...</div>";
+  
+  db.ref("feedbacks").once("value")
+    .then(snapshot => {
+      const data = snapshot.val() || {};
+      const feedbackArray = Object.entries(data).map(([id, value]) => ({
+        id: id,
+        ...value
+      }));
+      
+      currentData = feedbackArray.filter(f => f.org === org);
+      currentAuthorizedOrg = org;
+      displayMessages(currentData);
+      highlightLogo(org);
+      
+   
+      const modal = document.getElementById("summaryModal");
+      if (modal) modal.style.display = "none";
+    })
+    .catch(error => {
+      console.error("Firebase error:", error);
+      document.getElementById("adminMessages").innerHTML = "<div class='empty'>⚠️ Error loading data. Check console.</div>";
+      alert("Database error: " + error.message);
+    });
 }
 
-function displayMessages(data){
+function displayMessages(data) {
   const box = document.getElementById("adminMessages");
   box.innerHTML = "";
-  if(data.length === 0){ 
+  
+  if (!data || data.length === 0) { 
     box.innerHTML = "<div class='empty'>📭 No feedback yet</div>"; 
     return; 
   }
+  
   data.forEach((fb, index) => {
     const messageDiv = document.createElement("div");
     messageDiv.className = "message";
-    const safeText = fb.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const safeText = (fb.text || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const displayDate = fb.date ? new Date(fb.date).toLocaleString() : "No date";
     const contactInfo = fb.contact && fb.contact !== "Anonymous" ? fb.contact : "Anonymous";
+    
     messageDiv.innerHTML = `
       <div class="message-content">
         <div class="message-text">💬 ${safeText}</div>
@@ -99,52 +159,77 @@ function displayMessages(data){
           <span>📅 ${displayDate}</span>
           <span>📩 ${contactInfo}</span>
         </div>
-        <button class="delete-btn" data-index="${index}">🗑️ Delete</button>
+        <button class="delete-btn" data-id="${fb.id}" data-index="${index}">🗑️ Delete</button>
       </div>
     `;
+    
     const deleteBtn = messageDiv.querySelector('.delete-btn');
-    deleteBtn.addEventListener('click', () => deleteFeedback(index));
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const feedbackId = deleteBtn.getAttribute('data-id');
+      if (confirm("Are you sure you want to delete this feedback permanently?")) {
+        deleteFeedbackById(feedbackId);
+      }
+    });
+    
     box.appendChild(messageDiv);
   });
 }
 
-function deleteFeedback(index){
-  if(!confirm("Delete this feedback?")) return;
-  let feedback = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  const item = currentData[index];
-  feedback = feedback.filter(f => !(f.org === item.org && f.text === item.text && f.date === item.date && (f.contact || "") === (item.contact || "")));
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(feedback));
-  showAdmin();
+function deleteFeedbackById(feedbackId) {
+  if (!feedbackId) return;
+  
+  db.ref("feedbacks/" + feedbackId).remove()
+    .then(() => {
+
+      if (currentAuthorizedOrg) {
+        db.ref("feedbacks").once("value")
+          .then(snapshot => {
+            const data = snapshot.val() || {};
+            const feedbackArray = Object.entries(data).map(([id, value]) => ({
+              id: id,
+              ...value
+            }));
+            currentData = feedbackArray.filter(f => f.org === currentAuthorizedOrg);
+            displayMessages(currentData);
+          })
+          .catch(err => console.error("Refresh error:", err));
+      }
+    })
+    .catch(err => {
+      alert("Delete failed: " + err.message);
+    });
 }
 
+// Toggle password visibility
 const toggle = document.getElementById("togglePass");
 const passInput = document.getElementById("adminPass");
-toggle.addEventListener("click", () => { 
-  if(passInput.type === "password"){ 
-    passInput.type = "text"; 
-    toggle.textContent = "🙈"; 
-  } else { 
-    passInput.type = "password"; 
-    toggle.textContent = "👁️"; 
-  } 
-});
-
+if (toggle) {
+  toggle.addEventListener("click", () => { 
+    if (passInput.type === "password") { 
+      passInput.type = "text"; 
+      toggle.textContent = "🙈"; 
+    } else { 
+      passInput.type = "password"; 
+      toggle.textContent = "👁️"; 
+    } 
+  });
+}
 
 function downloadPDF() {
-  if(currentData.length === 0){ 
-    alert("No feedback to download!"); 
+  if (currentData.length === 0) { 
+    alert("No feedback to download! Please load feedback first using 'View Feedback'.");
     return; 
   }
   
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a4');
-  const org = document.getElementById("adminOrgSelect").value || "Organization";
+  const org = currentAuthorizedOrg || document.getElementById("adminOrgSelect").value || "Organization";
   
   const pageWidth = doc.internal.pageSize.getWidth();
   const marginX = 15;
   let yPos = 25;
   
-
   doc.setFillColor(220, 70, 70);
   doc.rect(0, 0, pageWidth, 5, 'F');
   doc.setFontSize(24);
@@ -169,8 +254,7 @@ function downloadPDF() {
   
   yPos += 14;
   
-
-  const totalWords = currentData.reduce((sum, f) => sum + (f.text?.split(/\s+/).length || 0), 0);
+  const totalWords = currentData.reduce((sum, f) => sum + ((f.text || "").split(/\s+/).filter(w => w.length > 0).length), 0);
   const avgWords = currentData.length > 0 ? Math.round(totalWords / currentData.length) : 0;
   
   doc.setFillColor(248, 248, 250);
@@ -186,7 +270,8 @@ function downloadPDF() {
   doc.setFont("helvetica", "normal");
   doc.text("Total Words: " + totalWords, marginX + 8, yPos + 15);
   doc.text("Average Words: " + avgWords, marginX + 8, yPos + 22);
-  doc.text("Latest: " + (currentData[currentData.length-1]?.date ? new Date(currentData[currentData.length-1].date).toLocaleDateString() : 'N/A'), pageWidth - marginX - 45, yPos + 15);
+  const latestDate = currentData[currentData.length-1]?.date ? new Date(currentData[currentData.length-1].date).toLocaleDateString() : 'N/A';
+  doc.text("Latest: " + latestDate, pageWidth - marginX - 45, yPos + 15);
   
   yPos += 40;
 
@@ -213,7 +298,7 @@ function downloadPDF() {
     let fromStr = fb.contact && fb.contact !== "Anonymous" ? fb.contact : "Anonymous";
     if (fromStr.length > 22) fromStr = fromStr.substring(0, 19) + "...";
     
-    const fullMessage = fb.text;
+    const fullMessage = fb.text || "";
     const splitMsg = doc.splitTextToSize(fullMessage, 68);
     const rowHeight = 8 + (splitMsg.length - 1) * 4;
     
@@ -248,7 +333,6 @@ function downloadPDF() {
     yPos += rowHeight;
   }
   
-
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
@@ -265,9 +349,12 @@ function downloadPDF() {
   doc.save(org + "_Feedback_Report.pdf");
 }
 
-function showSummary(){
-  if(currentData.length === 0){ 
-    showModalEnhanced(`<div class="empty-summary">📭 No feedback data available.<br>Please load organization feedback first.</div>`);
+function showSummary() {
+ 
+  if (currentData.length === 0) { 
+    showModalEnhanced(`
+      <div class="empty-summary">📭 No feedback data available.<br>Please load organization feedback first using "View Feedback".</div>
+    `);
     return; 
   }
   
@@ -276,11 +363,11 @@ function showSummary(){
   let wordFreq = {};
   
   currentData.forEach(f => {
-    const words = f.text.trim().toLowerCase().split(/\s+/);
+    const words = (f.text || "").trim().toLowerCase().split(/\s+/).filter(w => w.length > 0);
     totalWords += words.length;
     words.forEach(w => {
       let clean = w.replace(/[^\w]/g, '');
-      if(clean.length > 2 && !/^\d+$/.test(clean)){ 
+      if (clean.length > 2 && !/^\d+$/.test(clean)) { 
         wordFreq[clean] = (wordFreq[clean] || 0) + 1; 
       }
     });
@@ -292,7 +379,7 @@ function showSummary(){
   const latestThree = [...currentData].reverse().slice(0, 3);
   let latestHtml = '';
   latestThree.forEach((fb) => {
-    let safeText = fb.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    let safeText = (fb.text || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     latestHtml += `
       <div class="feedback-entry">
         <div class="feedback-quote">💬 ${safeText}</div>
@@ -304,8 +391,12 @@ function showSummary(){
   });
   
   let keywordsHtml = '';
-  if(sortedKeywords.length > 0){
-    keywordsHtml = `<div class="keyword-container">${sortedKeywords.map(([kw, count]) => `<span class="keyword-badge">${kw} (${count})</span>`).join('')}</div>`;
+  if (sortedKeywords.length > 0) {
+    keywordsHtml = `
+      <div class="keyword-container">
+        ${sortedKeywords.map(([kw, count]) => `<span class="keyword-badge">${kw} (${count})</span>`).join('')}
+      </div>
+    `;
   } else {
     keywordsHtml = `<div style="color:#ffaaaa; margin-top:5px;">— No significant keywords detected —</div>`;
   }
@@ -333,7 +424,7 @@ function showSummary(){
       </div>
       <hr class="divider-light" />
       <div class="summary-footer">
-        📍 ${document.getElementById("adminOrgSelect").value} · ${new Date().toLocaleString()}
+        📍 ${currentAuthorizedOrg || document.getElementById("adminOrgSelect").value} · ${new Date().toLocaleString()}
       </div>
     </div>
   `;
@@ -341,7 +432,7 @@ function showSummary(){
   showModalEnhanced(summaryHtml);
 }
 
-function showModalEnhanced(contentHTML){
+function showModalEnhanced(contentHTML) {
   const modal = document.getElementById("summaryModal");
   const modalContentDiv = document.getElementById("modalContent");
   modalContentDiv.innerHTML = contentHTML;
@@ -349,18 +440,21 @@ function showModalEnhanced(contentHTML){
   modalContentDiv.scrollTop = 0;
 }
 
+
 document.getElementById("closeModal").addEventListener("click", () => {
   document.getElementById("summaryModal").style.display = "none";
 });
+
 window.addEventListener("click", (e) => { 
   const modal = document.getElementById("summaryModal"); 
-  if(e.target === modal) modal.style.display = "none"; 
+  if (e.target === modal) modal.style.display = "none"; 
 });
+
 
 logoElements.forEach(logo => {
   logo.addEventListener("click", () => {
     const orgValue = logo.dataset.org;
-    if(orgValue){
+    if (orgValue) {
       const selectEl = document.getElementById("adminOrgSelect");
       selectEl.value = orgValue;
       highlightLogo(orgValue);
@@ -368,8 +462,11 @@ logoElements.forEach(logo => {
   });
 });
 
+
 window.addEventListener('load', function() {
-  document.getElementById("summaryModal").style.display = "none";
+  const modal = document.getElementById("summaryModal");
+  if (modal) modal.style.display = "none";
+ 
 });
 </script>
 </body>
