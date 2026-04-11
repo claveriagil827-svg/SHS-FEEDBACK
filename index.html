@@ -1,82 +1,73 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>SHS Feedback Wall</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="students.css">
 
 </head>
-
 <body>
-<div class="container">
 
+<div class="top-logos">
+  <img src="SSL.jpg" class="logo" data-org="SSL">
+  <img src="ASSETS.jpg" class="logo" data-org="ASSETS">
+  <img src="PRISM.jpg" class="logo" data-org="PRISM">
+  <img src="SCHOLAE.jpg" class="logo" data-org="SCHOLAE">
+  <img src="CYSTEM.jpg" class="logo" data-org="CYSTEM">
+  <img src="SKILLS.jpg" class="logo" data-org="SKILS">
+</div>
+
+<div class="container">
 <h2>💬 SHS Feedback Wall</h2>
 
-<label>Send feedback to:</label>
 <select id="orgSelect">
-<option>SSL</option>
-<option>ASSETS</option>
-<option>PRISM</option>
-<option>SCHOLAE</option>
-<option>CYSTEM</option>
-<option>SKILS</option>
+  <option value="SSL">SSL</option>
+  <option value="ASSETS">ASSETS</option>
+  <option value="PRISM">PRISM</option>
+  <option value="SCHOLAE">SCHOLAE</option>
+  <option value="CYSTEM">CYSTEM</option>
+  <option value="SKILS">SKILS</option>
 </select>
 
-<label>Your feedback:</label>
-<textarea id="msgText"></textarea>
+<textarea id="msgText" placeholder="Type your feedback..."></textarea>
 
 <button onclick="sendFeedback()">Send Feedback 🚀</button>
 
 <div class="success" id="successMsg">✅ Feedback sent successfully!</div>
-
-<div class="preview" id="previewBox" style="display:none;"></div>
-
 </div>
 
 <script>
 const STORAGE_KEY = "shsFeedback";
+const logoElements = document.querySelectorAll('.top-logos .logo');
+const orgSelect = document.getElementById('orgSelect');
+
+function highlightLogo(selectedOrg){
+    logoElements.forEach(img=>{
+        img.classList.toggle('active', img.dataset.org === selectedOrg);
+    });
+}
+
+orgSelect.addEventListener('change', e=> highlightLogo(e.target.value));
 
 function sendFeedback(){
-    const org = document.getElementById("orgSelect").value;
-    const text = document.getElementById("msgText").value.trim();
+  const org = orgSelect.value;
+  const text = document.getElementById("msgText").value.trim();
+  if(!text){ alert("⚠️ Please type your feedback!"); return; }
 
-    if(!text){
-        alert("⚠️ Please type your feedback!");
-        return;
-    }
+  const feedback = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  feedback.push({ org, text, date:new Date().toLocaleString() });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(feedback));
 
-    const feedback = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  document.getElementById("msgText").value = "";
+  document.getElementById("successMsg").style.display = "block";
 
-    const newEntry = {
-        org,
-        text,
-        date: new Date().toLocaleString(),
-        contact: "Anonymous"
-    };
+  setTimeout(()=>{ document.getElementById("successMsg").style.display = "none"; }, 3000);
 
-    feedback.push(newEntry);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(feedback));
-
-    document.getElementById("successMsg").style.display = "block";
-
-    const previewBox = document.getElementById("previewBox");
-    const div = document.createElement("div");
-    div.className = "message";
-    div.innerHTML = `<b>To:</b> ${org}<br><b>Message:</b> ${text}<br><small>📅 ${newEntry.date}</small>`;
-    
-    previewBox.appendChild(div);
-    previewBox.style.display = "block";
-
-    previewBox.scrollTop = previewBox.scrollHeight;
-
-    document.getElementById("msgText").value = "";
-
-    setTimeout(()=>{
-        document.getElementById("successMsg").style.display = "none";
-    }, 3000);
+  highlightLogo(org);
 }
-</script>
 
+highlightLogo(orgSelect.value);
+</script>
 </body>
 </html>
