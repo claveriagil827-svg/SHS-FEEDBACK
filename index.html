@@ -6,6 +6,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="students.css">
 
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
 </head>
 <body>
 
@@ -38,7 +41,21 @@
 </div>
 
 <script>
-const STORAGE_KEY = "shsFeedback";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCzy6G8bN908rcof72zMmiNxYfWb3l3KDo",
+  authDomain: "shs-feedback-29a25.firebaseapp.com",
+  databaseURL: "https://shs-feedback-29a25-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "shs-feedback-29a25",
+  storageBucket: "shs-feedback-29a25.appspot.com",
+  messagingSenderId: "549915426544",
+  appId: "1:549915426544:web:9d19f938d7f84ac5104c35"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+
 const logoElements = document.querySelectorAll('.top-logos .logo');
 const orgSelect = document.getElementById('orgSelect');
 
@@ -55,9 +72,11 @@ function sendFeedback(){
   const text = document.getElementById("msgText").value.trim();
   if(!text){ alert("⚠️ Please type your feedback!"); return; }
 
-  const feedback = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  feedback.push({ org, text, date:new Date().toLocaleString() });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(feedback));
+  db.ref("feedbacks").push({
+    org,
+    text,
+    date: new Date().toLocaleString()
+  });
 
   document.getElementById("msgText").value = "";
   document.getElementById("successMsg").style.display = "block";
@@ -68,6 +87,7 @@ function sendFeedback(){
 }
 
 highlightLogo(orgSelect.value);
+
 </script>
 </body>
 </html>
