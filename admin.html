@@ -1,121 +1,376 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Admin Panel</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css">
+<meta charset="UTF-8" />
+<title>Admin Panel | Feedback Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="admin.css" />  
+
 
 </head>
-
 <body>
-<div class="container">
 
+<div class="top-logos">
+  <img src="SSL.jpg" class="logo" data-org="SSL" />
+  <img src="ASSETS.jpg" class="logo" data-org="ASSETS" />
+  <img src="PRISM.jpg" class="logo" data-org="PRISM" />
+  <img src="SCHOLAE.jpg" class="logo" data-org="SCHOLAE" />
+  <img src="CYSTEM.jpg" class="logo" data-org="CYSTEM" />
+  <img src="SKILLS.jpg" class="logo" data-org="SKILS" />
+</div>
+
+<div class="container">
 <h2>🛠 Admin Panel</h2>
 
 <select id="adminOrgSelect">
-<option value="">--Select Organization--</option>
-<option>SSL</option>
-<option>ASSETS</option>
-<option>PRISM</option>
-<option>SCHOLAE</option>
-<option>CYSTEM</option>
-<option>SKILS</option>
+<option value="">-- Select Organization --</option>
+<option value="SSL">SSL</option>
+<option value="ASSETS">ASSETS</option>
+<option value="PRISM">PRISM</option>
+<option value="SCHOLAE"> SCHOLAE</option>
+<option value="CYSTEM"> CYSTEM</option>
+<option value="SKILS"> SKILS</option>
 </select>
 
-<input type="password" id="adminPass" placeholder="Enter password">
+<div class="password-wrapper">
+  <input type="password" id="adminPass" placeholder="Enter organization password" />
+  <span id="togglePass">👁️</span>
+</div>
 
-<button onclick="showAdmin()">View Feedback</button>
+<button onclick="showAdmin()">🔓 View Feedback</button>
 
-<div class="stats" id="stats"></div>
+<div class="action-row">
+  <button onclick="downloadPDF()">📄 Download PDF Report</button>
+  <button onclick="showSummary()">📊 Summary</button>
+</div>
 
 <div id="adminMessages"></div>
+</div>
 
+<div id="summaryModal">
+  <div class="modal-header-custom">
+    <h3>📈 FEEDBACK SUMMARY</h3>
+    <span id="closeModal">✖️</span>
+  </div>
+  <div id="modalContent"></div>
 </div>
 
 <script>
 const STORAGE_KEY = "shsFeedback";
-
-const ORG_PASSWORDS = {
-  "SSL": "ssl123",
-  "ASSETS": "assets456",
-  "PRISM": "prism789",
-  "SCHOLAE": "scholae101",
-  "CYSTEM": "cystem202",
-  "SKILS": "skils303"
-};
-
+const ORG_PASSWORDS = { "SSL":"ssl123","ASSETS":"assets456","PRISM":"prism789","SCHOLAE":"scholae101","CYSTEM":"cystem202","SKILS":"skils303"};
+const logoElements = document.querySelectorAll('.top-logos .logo');
 let currentData = [];
 
+function highlightLogo(selectedOrg){ 
+  logoElements.forEach(img=>{ 
+    img.classList.toggle('active', img.dataset.org === selectedOrg); 
+  }); 
+}
+
 function showAdmin(){
-    const org = document.getElementById("adminOrgSelect").value;
-    const pass = document.getElementById("adminPass").value;
-
-    if(!org) return alert("Select organization!");
-    if(pass !== ORG_PASSWORDS[org]) return alert("Wrong password!");
-
-    const feedback = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    currentData = feedback.filter(f => f.org.includes(org));
-
-    displayMessages(currentData);
+  const org = document.getElementById("adminOrgSelect").value;
+  const pass = document.getElementById("adminPass").value;
+  if(!org) return alert("Select organization!");
+  if(pass !== ORG_PASSWORDS[org]) return alert("Wrong password!");
+  const feedback = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  currentData = feedback.filter(f => f.org === org);
+  displayMessages(currentData);
+  highlightLogo(org);
 }
 
 function displayMessages(data){
-    const box = document.getElementById("adminMessages");
-    const stats = document.getElementById("stats");
-
-    box.innerHTML = "";
-    stats.innerText = "Total Feedback: " + data.length;
-
-    if(data.length === 0){
-        box.innerHTML = "<div class='empty'>📭 No feedback yet</div>";
-        return;
-    }
-
-    data.forEach((fb, index) => {
-        const div = document.createElement("div");
-        div.className = "message";
-
-        div.innerHTML = `
-            <b>Message:</b> ${fb.text}
-            <small>📅 ${fb.date || "No date"}</small>
-            <small>📩 ${fb.contact || "Anonymous"}</small>
-        `;
-
-        const del = document.createElement("button");
-        del.innerText = "Delete";
-        del.onclick = () => deleteFeedback(index);
-
-        div.appendChild(del);
-        box.appendChild(div);
-    });
-
-    box.scrollTo({
-        top: box.scrollHeight,
-        behavior: 'smooth'
-    });
+  const box = document.getElementById("adminMessages");
+  box.innerHTML = "";
+  if(data.length === 0){ 
+    box.innerHTML = "<div class='empty'>📭 No feedback yet</div>"; 
+    return; 
+  }
+  data.forEach((fb, index) => {
+    const messageDiv = document.createElement("div");
+    messageDiv.className = "message";
+    const safeText = fb.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const displayDate = fb.date ? new Date(fb.date).toLocaleString() : "No date";
+    const contactInfo = fb.contact && fb.contact !== "Anonymous" ? fb.contact : "Anonymous";
+    messageDiv.innerHTML = `
+      <div class="message-content">
+        <div class="message-text">💬 ${safeText}</div>
+        <div class="message-meta">
+          <span>📅 ${displayDate}</span>
+          <span>📩 ${contactInfo}</span>
+        </div>
+        <button class="delete-btn" data-index="${index}">🗑️ Delete</button>
+      </div>
+    `;
+    const deleteBtn = messageDiv.querySelector('.delete-btn');
+    deleteBtn.addEventListener('click', () => deleteFeedback(index));
+    box.appendChild(messageDiv);
+  });
 }
 
 function deleteFeedback(index){
-    if(!confirm("Delete this feedback?")) return;
-
-    let feedback = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    const item = currentData[index];
-
-    const realIndex = feedback.findIndex(f => 
-        f.org === item.org &&
-        f.text === item.text &&
-        f.date === item.date &&
-        (f.contact || "Anonymous") === (item.contact || "Anonymous")
-    );
-
-    if(realIndex > -1){
-        feedback.splice(realIndex, 1);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(feedback));
-        showAdmin();
-    }
+  if(!confirm("Delete this feedback?")) return;
+  let feedback = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  const item = currentData[index];
+  feedback = feedback.filter(f => !(f.org === item.org && f.text === item.text && f.date === item.date && (f.contact || "") === (item.contact || "")));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(feedback));
+  showAdmin();
 }
-</script>
 
+const toggle = document.getElementById("togglePass");
+const passInput = document.getElementById("adminPass");
+toggle.addEventListener("click", () => { 
+  if(passInput.type === "password"){ 
+    passInput.type = "text"; 
+    toggle.textContent = "🙈"; 
+  } else { 
+    passInput.type = "password"; 
+    toggle.textContent = "👁️"; 
+  } 
+});
+
+
+function downloadPDF() {
+  if(currentData.length === 0){ 
+    alert("No feedback to download!"); 
+    return; 
+  }
+  
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const org = document.getElementById("adminOrgSelect").value || "Organization";
+  
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const marginX = 15;
+  let yPos = 25;
+  
+
+  doc.setFillColor(220, 70, 70);
+  doc.rect(0, 0, pageWidth, 5, 'F');
+  doc.setFontSize(24);
+  doc.setTextColor(220, 70, 70);
+  doc.setFont("helvetica", "bold");
+  doc.text(org, pageWidth / 2, 28, { align: "center" });
+  doc.setFontSize(11);
+  doc.setTextColor(100, 100, 100);
+  doc.setFont("helvetica", "normal");
+  doc.text("FEEDBACK REPORT", pageWidth / 2, 39, { align: "center" });
+  
+  yPos = 46;
+  doc.setDrawColor(220, 70, 70);
+  doc.setLineWidth(0.5);
+  doc.line(marginX, yPos, pageWidth - marginX, yPos);
+  
+  yPos += 10;
+  doc.setFontSize(8);
+  doc.setTextColor(100, 100, 100);
+  doc.text("Generated: " + new Date().toLocaleString(), marginX, yPos);
+  doc.text("Total Responses: " + currentData.length, pageWidth - marginX - 35, yPos);
+  
+  yPos += 14;
+  
+
+  const totalWords = currentData.reduce((sum, f) => sum + (f.text?.split(/\s+/).length || 0), 0);
+  const avgWords = currentData.length > 0 ? Math.round(totalWords / currentData.length) : 0;
+  
+  doc.setFillColor(248, 248, 250);
+  doc.roundedRect(marginX, yPos, pageWidth - (marginX * 2), 30, 4, 4, 'F');
+  doc.setDrawColor(220, 70, 70);
+  doc.roundedRect(marginX, yPos, pageWidth - (marginX * 2), 30, 4, 4, 'S');
+  doc.setFontSize(8);
+  doc.setTextColor(220, 70, 70);
+  doc.setFont("helvetica", "bold");
+  doc.text("STATISTICS", marginX + 8, yPos + 6);
+  doc.setFontSize(8);
+  doc.setTextColor(80, 80, 80);
+  doc.setFont("helvetica", "normal");
+  doc.text("Total Words: " + totalWords, marginX + 8, yPos + 15);
+  doc.text("Average Words: " + avgWords, marginX + 8, yPos + 22);
+  doc.text("Latest: " + (currentData[currentData.length-1]?.date ? new Date(currentData[currentData.length-1].date).toLocaleDateString() : 'N/A'), pageWidth - marginX - 45, yPos + 15);
+  
+  yPos += 40;
+
+  const colX = { num: marginX + 4, date: marginX + 16, from: marginX + 52, message: marginX + 92 };
+  
+  doc.setFillColor(220, 70, 70);
+  doc.roundedRect(marginX, yPos, pageWidth - (marginX * 2), 9, 3, 3, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("No", colX.num, yPos + 6);
+  doc.text("Date", colX.date, yPos + 6);
+  doc.text("From", colX.from, yPos + 6);
+  doc.text("Feedback Message", colX.message, yPos + 6);
+  yPos += 9;
+
+  doc.setTextColor(60, 60, 60);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  
+  for (let i = 0; i < currentData.length; i++) {
+    const fb = currentData[i];
+    const dateStr = fb.date ? new Date(fb.date).toLocaleDateString() : "No date";
+    let fromStr = fb.contact && fb.contact !== "Anonymous" ? fb.contact : "Anonymous";
+    if (fromStr.length > 22) fromStr = fromStr.substring(0, 19) + "...";
+    
+    const fullMessage = fb.text;
+    const splitMsg = doc.splitTextToSize(fullMessage, 68);
+    const rowHeight = 8 + (splitMsg.length - 1) * 4;
+    
+    if (yPos + rowHeight > 275) {
+      doc.addPage();
+      yPos = 25;
+      doc.setFillColor(220, 70, 70);
+      doc.roundedRect(marginX, yPos, pageWidth - (marginX * 2), 9, 3, 3, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.text("No", colX.num, yPos + 6);
+      doc.text("Date", colX.date, yPos + 6);
+      doc.text("From", colX.from, yPos + 6);
+      doc.text("Feedback Message", colX.message, yPos + 6);
+      yPos += 9;
+      doc.setTextColor(60, 60, 60);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+    }
+    
+    const rowColor = i % 2 === 0 ? [252, 252, 252] : [245, 245, 245];
+    doc.setFillColor(...rowColor);
+    doc.rect(marginX, yPos - 2, pageWidth - (marginX * 2), rowHeight, "F");
+    
+    doc.setTextColor(60, 60, 60);
+    doc.text((i + 1).toString(), colX.num, yPos + 4);
+    doc.text(dateStr, colX.date, yPos + 4);
+    doc.text(fromStr, colX.from, yPos + 4);
+    doc.text(splitMsg, colX.message, yPos + 4);
+    
+    yPos += rowHeight;
+  }
+  
+
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(220, 70, 70);
+    doc.setLineWidth(0.3);
+    doc.line(marginX, 278, pageWidth - marginX, 278);
+    doc.setFontSize(7);
+    doc.setTextColor(130, 130, 130);
+    doc.setFont("helvetica", "italic");
+    doc.text("Page " + i + " of " + pageCount, pageWidth / 2, 285, { align: "center" });
+    doc.text("SHS Feedback Report", pageWidth / 2, 291, { align: "center" });
+  }
+  
+  doc.save(org + "_Feedback_Report.pdf");
+}
+
+function showSummary(){
+  if(currentData.length === 0){ 
+    showModalEnhanced(`<div class="empty-summary">📭 No feedback data available.<br>Please load organization feedback first.</div>`);
+    return; 
+  }
+  
+  const total = currentData.length;
+  let totalWords = 0;
+  let wordFreq = {};
+  
+  currentData.forEach(f => {
+    const words = f.text.trim().toLowerCase().split(/\s+/);
+    totalWords += words.length;
+    words.forEach(w => {
+      let clean = w.replace(/[^\w]/g, '');
+      if(clean.length > 2 && !/^\d+$/.test(clean)){ 
+        wordFreq[clean] = (wordFreq[clean] || 0) + 1; 
+      }
+    });
+  });
+  
+  const avgWords = total === 0 ? 0 : Math.round(totalWords / total);
+  const sortedKeywords = Object.entries(wordFreq).sort((a,b) => b[1] - a[1]).slice(0, 5);
+  
+  const latestThree = [...currentData].reverse().slice(0, 3);
+  let latestHtml = '';
+  latestThree.forEach((fb) => {
+    let safeText = fb.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    latestHtml += `
+      <div class="feedback-entry">
+        <div class="feedback-quote">💬 ${safeText}</div>
+        <div class="feedback-meta-sm">
+          📅 ${fb.date ? new Date(fb.date).toLocaleString() : "No date"} | 👤 ${fb.contact && fb.contact !== "Anonymous" ? fb.contact : "Anonymous"}
+        </div>
+      </div>
+    `;
+  });
+  
+  let keywordsHtml = '';
+  if(sortedKeywords.length > 0){
+    keywordsHtml = `<div class="keyword-container">${sortedKeywords.map(([kw, count]) => `<span class="keyword-badge">${kw} (${count})</span>`).join('')}</div>`;
+  } else {
+    keywordsHtml = `<div style="color:#ffaaaa; margin-top:5px;">— No significant keywords detected —</div>`;
+  }
+  
+  const summaryHtml = `
+    <div class="summary-card">
+      <div class="summary-stat-item">
+        <div class="stat-label-custom">📋 TOTAL RESPONSES</div>
+        <div class="stat-value">${total}</div>
+      </div>
+      <div class="summary-stat-item">
+        <div class="stat-label-custom">✍️ AVERAGE WORDS</div>
+        <div class="stat-value">${avgWords}</div>
+        <div class="stat-sub">from ${totalWords} total words</div>
+      </div>
+      <div class="summary-stat-item">
+        <div class="stat-label-custom">🔑 TOP KEYWORDS</div>
+        ${keywordsHtml}
+      </div>
+      <div class="summary-stat-item">
+        <div class="stat-label-custom">🕒 LATEST FEEDBACK</div>
+        <div class="latest-feedback-box">
+          ${latestHtml || '<div style="padding: 10px; text-align:center;">✨ No recent feedback</div>'}
+        </div>
+      </div>
+      <hr class="divider-light" />
+      <div class="summary-footer">
+        📍 ${document.getElementById("adminOrgSelect").value} · ${new Date().toLocaleString()}
+      </div>
+    </div>
+  `;
+  
+  showModalEnhanced(summaryHtml);
+}
+
+function showModalEnhanced(contentHTML){
+  const modal = document.getElementById("summaryModal");
+  const modalContentDiv = document.getElementById("modalContent");
+  modalContentDiv.innerHTML = contentHTML;
+  modal.style.display = "flex";
+  modalContentDiv.scrollTop = 0;
+}
+
+document.getElementById("closeModal").addEventListener("click", () => {
+  document.getElementById("summaryModal").style.display = "none";
+});
+window.addEventListener("click", (e) => { 
+  const modal = document.getElementById("summaryModal"); 
+  if(e.target === modal) modal.style.display = "none"; 
+});
+
+logoElements.forEach(logo => {
+  logo.addEventListener("click", () => {
+    const orgValue = logo.dataset.org;
+    if(orgValue){
+      const selectEl = document.getElementById("adminOrgSelect");
+      selectEl.value = orgValue;
+      highlightLogo(orgValue);
+    }
+  });
+});
+
+window.addEventListener('load', function() {
+  document.getElementById("summaryModal").style.display = "none";
+});
+</script>
 </body>
 </html>
