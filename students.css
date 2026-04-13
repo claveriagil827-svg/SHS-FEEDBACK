@@ -18,7 +18,7 @@ body {
   color: #fff;
 }
 
-/* ===== DESKTOP (DEFAULT) ===== */
+/* ===== DESKTOP (1 ROW) ===== */
 .top-logos {
   position:fixed;
   top:25px;
@@ -36,6 +36,10 @@ body {
   object-fit:cover;
   border:3px solid rgba(255,255,255,0.6);
   transition:0.3s;
+
+  /* 🔥 optional design */
+  padding:5px;
+  background: rgba(255,255,255,0.1);
 }
 
 .logo:hover {
@@ -109,20 +113,22 @@ button:hover {
   text-align:center;
 }
 
-/* ===== MOBILE (3x3 GRID) ===== */
+/* ===== MOBILE (3x3 PERFECT GRID + SPACING) ===== */
 @media (max-width: 768px) {
   .top-logos {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 per row */
+    grid-template-columns: repeat(3, 1fr);
     place-items: center;
-    gap: 12px;
+
+    gap: 18px; /* 🔥 spacing */
+    padding: 10px;
 
     position: fixed;
     top: 15px;
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
-    max-width: 260px;
+    max-width: 300px;
   }
 
   .logo {
@@ -131,15 +137,15 @@ button:hover {
   }
 
   body {
-    padding-top: 180px;
+    padding-top: 200px;
   }
 }
 
 /* ===== EXTRA SMALL PHONES ===== */
 @media (max-width: 480px) {
   .top-logos {
-    max-width: 230px;
-    gap: 10px;
+    max-width: 260px;
+    gap: 14px;
   }
 
   .logo {
@@ -148,7 +154,7 @@ button:hover {
   }
 
   body {
-    padding-top: 165px;
+    padding-top: 180px;
   }
 
   .container {
