@@ -109,9 +109,10 @@ button:hover {
   text-align:center;
 }
 
+/* ========== PARA SA CP LANG: MAGING 3x3 ANG LOGO (3 sa taas, 3 sa baba) ========== */
 @media (max-width: 768px) {
   .top-logos {
-    flex-wrap: wrap;      
+    flex-wrap: wrap;
     width: 90%;
     left: 5%;
     gap: 15px;
@@ -122,9 +123,10 @@ button:hover {
     height: 70px;
   }
   body {
-    padding-top: 160px;    
+    padding-top: 160px;
   }
 }
+
 
 @media (max-width: 480px) {
   .logo {
