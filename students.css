@@ -36,8 +36,6 @@ body {
   object-fit:cover;
   border:3px solid rgba(255,255,255,0.6);
   transition:0.3s;
-
-  /* 🔥 optional design */
   padding:5px;
   background: rgba(255,255,255,0.1);
 }
@@ -113,48 +111,64 @@ button:hover {
   text-align:center;
 }
 
-/* ===== MOBILE (3x3 PERFECT GRID + SPACING) ===== */
+/* ===== MOBILE (CIRCLE ORBIT) ===== */
 @media (max-width: 768px) {
+
   .top-logos {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    place-items: center;
-
-    gap: 18px; /* 🔥 spacing */
-    padding: 10px;
-
     position: fixed;
-    top: 15px;
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    width: 100%;
-    max-width: 300px;
+    
+    width: 260px;
+    height: 260px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .logo {
+    position: absolute;
     width: 65px;
     height: 65px;
   }
 
+  /* CENTER LOGO */
+  .logo:nth-child(1) {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1.15);
+    z-index: 2;
+  }
+
+  /* ORBIT LOGOS */
+  .logo:nth-child(2) { top:50%; left:50%; transform: rotate(0deg)   translate(110px) rotate(0deg); }
+  .logo:nth-child(3) { top:50%; left:50%; transform: rotate(72deg)  translate(110px) rotate(-72deg); }
+  .logo:nth-child(4) { top:50%; left:50%; transform: rotate(144deg) translate(110px) rotate(-144deg); }
+  .logo:nth-child(5) { top:50%; left:50%; transform: rotate(216deg) translate(110px) rotate(-216deg); }
+  .logo:nth-child(6) { top:50%; left:50%; transform: rotate(288deg) translate(110px) rotate(-288deg); }
+
   body {
-    padding-top: 200px;
+    padding-top: 320px;
   }
 }
 
 /* ===== EXTRA SMALL PHONES ===== */
 @media (max-width: 480px) {
+
   .top-logos {
-    max-width: 260px;
-    gap: 14px;
+    width: 220px;
+    height: 220px;
   }
 
   .logo {
-    width: 60px;
-    height: 60px;
+    width: 55px;
+    height: 55px;
   }
 
   body {
-    padding-top: 180px;
+    padding-top: 280px;
   }
 
   .container {
