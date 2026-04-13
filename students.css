@@ -1,4 +1,8 @@
-* { margin:0; padding:0; box-sizing:border-box; }
+* {
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
 
 body {
   font-family: 'Poppins', sans-serif;
@@ -14,7 +18,7 @@ body {
   color: #fff;
 }
 
-
+/* ===== DESKTOP (DEFAULT) ===== */
 .top-logos {
   position:fixed;
   top:25px;
@@ -44,6 +48,7 @@ body {
   border-color:#ff3b3b;
 }
 
+/* ===== CONTAINER ===== */
 .container {
   display:flex;
   flex-direction:column;
@@ -51,11 +56,9 @@ body {
   backdrop-filter: blur(30px);
   border-radius: 30px;
   padding: 45px;
-
   width: 800px;          
   max-width: 95%;
   min-height: 500px;     
-
   box-shadow: 0 20px 70px rgba(0,0,0,0.6);
 }
 
@@ -64,7 +67,6 @@ h2 {
   font-size:2.2em;
   margin-bottom:25px;
 }
-
 
 select, textarea, button {
   width:100%;
@@ -87,7 +89,6 @@ textarea {
   resize:vertical;
 }
 
-
 button {
   background: linear-gradient(135deg, #ff4d4d, #ff7b7b);
   color:#fff;
@@ -99,7 +100,6 @@ button:hover {
   transform: scale(1.05);
 }
 
-
 .success {
   display:none;
   margin-top:10px;
@@ -109,49 +109,53 @@ button:hover {
   text-align:center;
 }
 
-/* ========== SA CP LANG: 3 sa TAAS, 3 sa BABA (2 ROWS) ========== */
+/* ===== MOBILE (3x3 GRID) ===== */
 @media (max-width: 768px) {
   .top-logos {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    max-width: 280px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 per row */
+    place-items: center;
+    gap: 12px;
+
+    position: fixed;
+    top: 15px;
     left: 50%;
     transform: translateX(-50%);
-    gap: 12px;
-    top: 15px;
+    width: 100%;
+    max-width: 260px;
   }
+
   .logo {
-    width: 70px;
-    height: 70px;
-    flex: 0 0 auto;
+    width: 65px;
+    height: 65px;
   }
+
   body {
-    padding-top: 170px;
+    padding-top: 180px;
   }
 }
 
-/* Para sa sobrang liit na phones */
+/* ===== EXTRA SMALL PHONES ===== */
 @media (max-width: 480px) {
   .top-logos {
-    max-width: 250px;
+    max-width: 230px;
     gap: 10px;
   }
+
   .logo {
     width: 60px;
     height: 60px;
   }
+
   body {
-    padding-top: 155px;
+    padding-top: 165px;
   }
+
   .container {
     padding: 30px 20px;
   }
+
   h2 {
     font-size: 1.8em;
   }
 }
-
-/* SA LAPTOP (min-width: 769px): WALANG BINAGO - isang row lang lahat ng 6 na logo */
