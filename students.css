@@ -109,35 +109,42 @@ button:hover {
   text-align:center;
 }
 
-/* ========== PARA SA CP LANG: MAGING 3x3 ANG LOGO (3 sa taas, 3 sa baba) ========== */
+/* ========== SA CP LANG: 3 sa TAAS, 3 sa BABA (2 ROWS) ========== */
 @media (max-width: 768px) {
   .top-logos {
+    display: flex;
     flex-wrap: wrap;
-    width: 90%;
-    left: 5%;
-    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 280px;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 12px;
     top: 15px;
   }
   .logo {
     width: 70px;
     height: 70px;
+    flex: 0 0 auto;
   }
   body {
-    padding-top: 160px;
+    padding-top: 170px;
   }
 }
 
-
+/* Para sa sobrang liit na phones */
 @media (max-width: 480px) {
+  .top-logos {
+    max-width: 250px;
+    gap: 10px;
+  }
   .logo {
     width: 60px;
     height: 60px;
   }
-  .top-logos {
-    gap: 12px;
-  }
   body {
-    padding-top: 145px;
+    padding-top: 155px;
   }
   .container {
     padding: 30px 20px;
@@ -146,3 +153,5 @@ button:hover {
     font-size: 1.8em;
   }
 }
+
+/* SA LAPTOP (min-width: 769px): WALANG BINAGO - isang row lang lahat ng 6 na logo */
