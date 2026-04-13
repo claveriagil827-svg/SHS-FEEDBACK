@@ -18,7 +18,7 @@ body {
   color: #fff;
 }
 
-/* ===== DESKTOP (1 ROW) ===== */
+/* ===== DESKTOP ===== */
 .top-logos {
   position:fixed;
   top:25px;
@@ -58,9 +58,9 @@ body {
   backdrop-filter: blur(30px);
   border-radius: 30px;
   padding: 45px;
-  width: 800px;          
+  width: 800px;
   max-width: 95%;
-  min-height: 500px;     
+  min-height: 500px;
   box-shadow: 0 20px 70px rgba(0,0,0,0.6);
 }
 
@@ -78,7 +78,6 @@ select, textarea, button {
   margin-bottom:18px;
   font-size:1.05em;
   padding:16px;
-  transition:0.3s;
 }
 
 select, textarea {
@@ -87,7 +86,7 @@ select, textarea {
 }
 
 textarea {
-  min-height:140px; 
+  min-height:140px;
   resize:vertical;
 }
 
@@ -102,30 +101,16 @@ button:hover {
   transform: scale(1.05);
 }
 
-.success {
-  display:none;
-  margin-top:10px;
-  padding:12px;
-  background:#28a745;
-  border-radius:10px;
-  text-align:center;
-}
-
-/* ===== MOBILE (CIRCLE ORBIT) ===== */
+/* ===== MOBILE CIRCLE (REAL FIXED) ===== */
 @media (max-width: 768px) {
 
   .top-logos {
     position: fixed;
-    top: 20px;
+    top: 30px;
     left: 50%;
     transform: translateX(-50%);
-    
     width: 260px;
     height: 260px;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
 
   .logo {
@@ -134,27 +119,27 @@ button:hover {
     height: 65px;
   }
 
-  /* CENTER LOGO */
+  /* CENTER */
   .logo:nth-child(1) {
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(1.15);
+    transform: translate(-50%, -50%) scale(1.2);
     z-index: 2;
   }
 
-  /* ORBIT LOGOS */
-  .logo:nth-child(2) { top:50%; left:50%; transform: rotate(0deg)   translate(110px) rotate(0deg); }
-  .logo:nth-child(3) { top:50%; left:50%; transform: rotate(72deg)  translate(110px) rotate(-72deg); }
-  .logo:nth-child(4) { top:50%; left:50%; transform: rotate(144deg) translate(110px) rotate(-144deg); }
-  .logo:nth-child(5) { top:50%; left:50%; transform: rotate(216deg) translate(110px) rotate(-216deg); }
-  .logo:nth-child(6) { top:50%; left:50%; transform: rotate(288deg) translate(110px) rotate(-288deg); }
+  /* CIRCLE POSITIONS */
+  .logo:nth-child(2) { top: 0%; left: 50%; transform: translate(-50%, 0); }
+  .logo:nth-child(3) { top: 25%; left: 85%; transform: translate(-50%, -50%); }
+  .logo:nth-child(4) { top: 75%; left: 85%; transform: translate(-50%, -50%); }
+  .logo:nth-child(5) { top: 100%; left: 50%; transform: translate(-50%, -100%); }
+  .logo:nth-child(6) { top: 75%; left: 15%; transform: translate(-50%, -50%); }
 
   body {
     padding-top: 320px;
   }
 }
 
-/* ===== EXTRA SMALL PHONES ===== */
+/* ===== SMALL PHONES ===== */
 @media (max-width: 480px) {
 
   .top-logos {
