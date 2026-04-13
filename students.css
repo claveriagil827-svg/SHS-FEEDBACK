@@ -108,3 +108,39 @@ button:hover {
   border-radius:10px;
   text-align:center;
 }
+
+@media (max-width: 768px) {
+  .top-logos {
+    flex-wrap: wrap;      
+    width: 90%;
+    left: 5%;
+    gap: 15px;
+    top: 15px;
+  }
+  .logo {
+    width: 70px;
+    height: 70px;
+  }
+  body {
+    padding-top: 160px;    
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    width: 60px;
+    height: 60px;
+  }
+  .top-logos {
+    gap: 12px;
+  }
+  body {
+    padding-top: 145px;
+  }
+  .container {
+    padding: 30px 20px;
+  }
+  h2 {
+    font-size: 1.8em;
+  }
+}
